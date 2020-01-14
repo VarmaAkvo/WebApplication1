@@ -1,0 +1,96 @@
+﻿@page
+@model WebApplication1.Pages.Admin.Denounces.IndexModel
+@{
+    ViewData["Title"] = "Denounces";
+    var preDisabled = Model.Denounces.HasPreviousPage ? "" : "disabled";
+    var nextDisabled = Model.Denounces.HasNextPage ? "" : "disabled";
+    string Active(int pageIndex)
+    {
+        return Model.Denounces.IsCurrentPage(pageIndex) ? "active" : "";
+    }
+}
+
+<h1>@ViewData["Title"]</h1>
+<hr />
+@if (Model.Denounces.Count == 0)
+{
+    <p>
+        There is no denounces.
+    </p>
+}
+else
+{
+    <nav>
+        <ul class="pagination">
+            <li class="page-item @preDisabled">
+                <a class="page-link" asp-page="./Index"
+                   asp-route-pageIndex="@(Model.Denounces.PageIndex-1)">
+                    Previous
+                </a>
+            </li>
+            @foreach (var pageIndex in Model.Denounces.GetPageIndexes(9))
+            {
+                <li class="page-item @Active(pageIndex)">
+                    <a class="page-link" asp-page="./Index"
+                       asp-route-pageIndex="@pageIndex">
+                        @pageIndex
+                    </a>
+                </li>
+            }
+            <li class="page-item @nextDisabled">
+                <a class="page-link" asp-page="./Index"
+                   asp-route-pageIndex="@(Model.Denounces.PageIndex+1)">
+                    Next
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Denounced</th>
+                <th scope="col">Denouncing</th>
+                <th scope="col">CreatedAt</th>
+                <th scope="col">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var denounce in Model.Denounces)
+            {
+                <tr>
+                    <td>@denounce.Denounced.Name</td>
+                    <td>@denounce.Denouncing.Name</td>
+                    <td>@denounce.CreatedAtUTC.ToLocalTime()</td>
+                    <td>
+                        <a asp-page="Details" asp-route-id="@denounce.ID">Details</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <nav>
+        <ul class="pagination">
+            <li class="page-item @preDisabled">
+                <a class="page-link" asp-page="./Index"
+                   asp-route-pageIndex="@(Model.Denounces.PageIndex-1)">
+                    Previous
+                </a>
+            </li>
+            @foreach (var pageIndex in Model.Denounces.GetPageIndexes(9))
+            {
+                <li class="page-item @Active(pageIndex)">
+                    <a class="page-link" asp-page="./Index"
+                       asp-route-pageIndex="@pageIndex">
+                        @pageIndex
+                    </a>
+                </li>
+            }
+            <li class="page-item @nextDisabled">
+                <a class="page-link" asp-page="./Index"
+                   asp-route-pageIndex="@(Model.Denounces.PageIndex+1)">
+                    Next
+                </a>
+            </li>
+        </ul>
+    </nav>
+}

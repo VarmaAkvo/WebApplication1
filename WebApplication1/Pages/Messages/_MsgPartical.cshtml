@@ -1,0 +1,25 @@
+﻿@using WebApplication1.Data
+@model WebApplication1.Data.Message
+@{ 
+    string GetMessage(Message msg)
+    {
+        return $"{msg.Sender.Name} {msg.Action}s you in {msg.Post.Title}.";
+    }
+}
+<div>
+    <div>@GetMessage(Model)</div>
+    <div class="d-flex justify-content-between">
+        <span>@Model.UpdatedAtUTC.ToLocalTime()</span>
+        <div class="d-flex">
+            <a asp-page="/Posts/Details" asp-route-id="@Model.Post.ID"
+               class="btn btn-sm btn-primary mr-2">Go</a>
+            @if (!Model.Readed)
+            {
+                <form method="post">
+                    <input name="msgId" value="@Model.ID" hidden />
+                    <button asp-page-handler="Check" class="btn btn-sm btn-primary">Check</button>
+                </form>
+            }
+        </div>
+    </div>
+</div>

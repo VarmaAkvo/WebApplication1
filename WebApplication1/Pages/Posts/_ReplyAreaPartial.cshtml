@@ -1,0 +1,79 @@
+﻿@using WebApplication1.Data
+@using WebApplication1.Utilities
+@inject WebApplication1.Utilities.FileUpload FileUpload
+@model PaginatedList<Comment>
+
+@{
+    string preDisabled = Model.HasPreviousPage ? "" : "disabled";
+    string nextDisabled = Model.HasNextPage ? "" : "disabled";
+    string Active(int pageIndex)
+    {
+        return Model.IsCurrentPage(pageIndex) ? "active" : "";
+    }
+    int commentId = (int)Model[0].ReplyToID;
+}
+<div class="mb-1">
+    @foreach (var reply in Model)
+    {
+        <div class="row border-bottom">
+            <div class="col-2">
+                @if (!string.IsNullOrEmpty(reply.User.Gravatar))
+                {
+                    <img src="@FileUpload.GetGravatarUrl(reply.User.Gravatar)"
+                            class="img-fluid img-thumbnail" />
+                }
+            </div>
+            <div class="col-10">
+                <div class="d-flex justify-content-between">
+                    <h3>@reply.User.Name</h3>
+                    <small class="text-secondary">
+                        CreatedAt: @reply.CreatedAtUTC.ToLocalTime()
+                    </small>
+                </div>
+                <div class="mb-2 p-2 border-bottom">
+                    @Html.Raw(reply.Content)
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <a asp-page="/Denounces/Create" asp-route-isPost=false asp-route-id="@reply.ID"
+                       class="btn btn-sm btn-danger">Denounce</a>
+                    <button name="replyToButton" data-comment-id="@reply.ReplyToID"
+                            data-reply-name="@reply.User.Name"
+                            class="btn btn-sm btn-primary">
+                        Reply
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="mt-1">
+            <ul class="pagination">
+                <li class="page-item @preDisabled">
+                    <btn class="page-link" name="replyNavBtn"
+                            data-comment-id="@commentId"
+                            data-page-index="@(Model.PageIndex-1)">
+                        Previous
+                    </btn>
+                </li>
+                @foreach (var pageIndex in Model.GetPageIndexes(5))
+                {
+                    <li class="page-item @Active(pageIndex)">
+                        <btn class="page-link" name="replyNavBtn"
+                                data-comment-id="@commentId"
+                                data-page-index="@pageIndex">
+                            @pageIndex
+                        </btn>
+                    </li>
+                }
+                <li class="page-item @nextDisabled">
+                    <btn class="page-link" name="replyNavBtn"
+                            data-comment-id="@commentId"
+                            data-page-index="@(Model.PageIndex+1)">
+                        Next
+                    </btn>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>

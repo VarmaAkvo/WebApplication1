@@ -1,0 +1,134 @@
+﻿@page
+@model DetailsModel
+@using Microsoft.AspNetCore.Html
+@inject WebApplication1.Utilities.FileUpload FileUpload
+@{
+    ViewData["Title"] = Model.Forum.Name;
+    var preDisabled = Model.Posts.HasPreviousPage ? "" : "disabled";
+    var nextDisabled = Model.Posts.HasNextPage ? "" : "disabled";
+    string Active(int pageIndex)
+    {
+        return Model.Posts.IsCurrentPage(pageIndex) ? "active" : "";
+    }
+}
+
+<div>
+    <h1>@ViewData["Title"]</h1>
+    <div class="d-flex justify-content-between">
+        <h3 class="text-secondary">@Model.Forum.Description</h3>
+        <a asp-page="/Posts/Create" asp-route-forumId="@Model.Forum.ID"
+           class="btn btn-primary">
+            New Post
+        </a>
+    </div>
+</div>
+<hr />
+@if (Model.Posts.Count == 0)
+{
+    <p>
+        There is no posts.You can
+        <a asp-page="/Posts/Create" asp-route-forumID="@Model.Forum.ID">
+            create
+        </a> one.
+    </p>
+}
+else
+{
+    <nav>
+        <ul class="pagination">
+            <li class="page-item @preDisabled">
+                <a class="page-link" asp-page="./Details"
+                   asp-route-id="@Model.Forum.ID"
+                   asp-route-pageIndex="@(Model.Posts.PageIndex-1)">
+                    Previous
+                </a>
+            </li>
+            @foreach (var pageIndex in Model.Posts.GetPageIndexes(9))
+            {
+                <li class="page-item @Active(pageIndex)">
+                    <a class="page-link" asp-page="./Details"
+                       asp-route-id="@Model.Forum.ID"
+                       asp-route-pageIndex="@pageIndex">
+                        @pageIndex
+                    </a>
+                </li>
+            }
+            <li class="page-item @nextDisabled">
+                <a class="page-link" asp-page="./Details"
+                   asp-route-id="@Model.Forum.ID"
+                   asp-route-pageIndex="@(Model.Posts.PageIndex+1)">
+                    Next
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="list-group mb-2">
+        @foreach (var postVM in Model.PostVMs)
+        {
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col-4">
+                        <form method="post">
+                            <input name="postId" value="@postVM.Post.ID" hidden />
+                            <button class="btn btn-link" asp-page-handler="UpdateReadCount">@postVM.Post.Title</button>
+                        </form>
+                        <div class="text-secondary">
+                            <small>@postVM.Post.User.Name, @postVM.Post.CreatedAtUTC.ToLocalTime()</small>
+                        </div>
+                    </div>
+                    <div class="col-2 text-secondary text-right d-flex flex-column justify-content-center">
+                        <div style="font-size:large">@postVM.Post.ReadCount</div>
+                        <div>Read.</div>
+                    </div>
+                    <div class="col-2 text-secondary text-right d-flex flex-column justify-content-center">
+                        <div style="font-size:large">@postVM.CommentCount</div>
+                        <div>Comments.</div>
+                    </div>
+                    @if (postVM.NewestComment != null)
+                    {
+                        <div class="col-1 d-flex align-content-center">
+                            @if (!string.IsNullOrEmpty(postVM.NewestComment.User.Gravatar))
+                            {
+                                <img src="@FileUpload.GetGravatarUrl(postVM.NewestComment.User.Gravatar)"
+                                     class="img-fluid rounded-circle" />
+                            }
+                        </div>
+                        <div class="col-3 d-flex flex-column justify-content-center">
+                            <div>@postVM.NewestComment.User.Name</div>
+                            <div class="text-secondary">@postVM.NewestComment.CreatedAtUTC.ToLocalTime()</div>
+                        </div>
+                    }
+                </div>
+            </li>
+        }
+    </ul>
+    <nav>
+        <ul class="pagination">
+            <li class="page-item @preDisabled">
+                <a class="page-link" asp-page="./Details"
+                   asp-route-id="@Model.Forum.ID"
+                   asp-route-pageIndex="@(Model.Posts.PageIndex-1)">
+                    Previous
+                </a>
+            </li>
+            @foreach (var pageIndex in Model.Posts.GetPageIndexes(9))
+            {
+                <li class="page-item @Active(pageIndex)">
+                    <a class="page-link" asp-page="./Details"
+                       asp-route-id="@Model.Forum.ID"
+                       asp-route-pageIndex="@pageIndex">
+                        @pageIndex
+                    </a>
+                </li>
+            }
+            <li class="page-item @nextDisabled">
+                <a class="page-link" asp-page="./Details"
+                   asp-route-id="@Model.Forum.ID"
+                   asp-route-pageIndex="@(Model.Posts.PageIndex+1)">
+                    Next
+                </a>
+            </li>
+        </ul>
+    </nav>
+}
+

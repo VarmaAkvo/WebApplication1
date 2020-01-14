@@ -1,0 +1,63 @@
+﻿@page
+@model IndexModel
+@using Microsoft.AspNetCore.Identity
+@using WebApplication1.Areas.Identity.Data
+@inject UserManager<WebApplication1User> UserManager
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="container-fluid">
+	<h3 class="bg-dark text-white mb-0 row p-2 rounded-top">Forums</h3>
+    @foreach (var forum in Model.Forums)
+	{
+		 <div class="row border">
+			 <div class="col-6">
+				 <div class="row">
+				 	<div class="col-2 d-flex align-items-center">
+				 	   @if (!string.IsNullOrEmpty(forum.Icon))
+					    {
+				 		    <img src="@forum.Icon" class="img-fluid"/>
+				        }
+				    </div>
+					<div class="col-10">
+				 		<h3 class="font-weight-bold m-0">
+							<a class="nav-link" asp-page="/Forums/Details" asp-route-id="@forum.ID">@forum.Name</a>
+						 </h3>
+						<div class="text-secondary" style="padding-left:1rem">@forum.Description</div>
+					</div>
+				 </div>
+			 </div>
+			 <div class="col-2 text-secondary text-right d-flex flex-column justify-content-center">
+				 <div style="font-size:large">@forum.PostCount</div>
+				 <div>Posts.</div>
+			 </div>
+			 <div class="col-4 d-flex flex-column justify-content-center">
+				 @if (forum.NewestPost != null)
+                 {
+					 <div class="flex-column">
+						 <div class="text-truncate font-weight-bold">
+							<a class="nav-link p-0" asp-page="/Posts/Details" asp-route-id="@forum.NewestPost.ID">
+								@forum.NewestPost.Title
+							</a>
+						 </div>
+						 <div>
+							 <small>@forum.NewestPost.User.Name</small>
+							 <small class="text-secondary">@forum.NewestPost.UpdatedAtUTC.ToLocalTime()</small>
+						 </div>
+					 </div>
+                 }
+			 </div>
+		 </div>
+	}
+
+	<h3 class="bg-dark text-white mb-0 row p-2 rounded-top">Newest Posts</h3>
+	@foreach (var post in Model.Posts)
+    {
+		<div class="row border">
+			<a asp-page="/Posts/Details" asp-route-id="@post.ID" class="nav-link col-4">@post.Title</a>
+			<div class="small my-auto col-4">Author: @post.User.Name</div>
+			<div class="small text-black-50 my-auto pr-2 col-4">Reply At: @post.UpdatedAtUTC.ToLocalTime()</div>
+		</div>
+    }
+</div>

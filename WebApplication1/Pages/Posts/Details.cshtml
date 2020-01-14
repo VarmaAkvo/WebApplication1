@@ -1,0 +1,206 @@
+﻿@page
+@model WebApplication1.Pages.Posts.DetailsModel
+@inject WebApplication1.Utilities.FileUpload FileUpload
+@{
+    ViewData["Title"] = Model.Post.Title;
+    var preDisabled = Model.Comments.HasPreviousPage ? "" : "disabled";
+    var nextDisabled = Model.Comments.HasNextPage ? "" : "disabled";
+    string Active(int pageIndex)
+    {
+        return Model.Comments.IsCurrentPage(pageIndex) ? "active" : "";
+    }
+}
+
+<h1>@ViewData["Title"]</h1>
+<div class="d-flex justify-content-end">
+    <a asp-page="./Edit" asp-route-id="@Model.Post.ID"
+       class="btn btn-sm btn-primary mr-1">
+        Edit
+    </a>
+    <a asp-page="./Delete" asp-route-id="@Model.Post.ID"
+       class="btn btn-sm btn-danger">
+        Delete
+    </a>
+</div>
+<hr />
+
+<div class="row">
+    <div class="col-2">
+        @if (!string.IsNullOrEmpty(Model.Post.User.Gravatar))
+        {
+            <img src="@FileUpload.GetGravatarUrl(Model.Post.User.Gravatar)"
+                 class="img-fluid img-thumbnail" />
+        }
+    </div>
+    <div class="col-10">
+        <div class="d-flex justify-content-between">
+            <div>
+                <h3>@Model.Post.User.Name</h3>
+                <small class="text-secondary">CreatedAt: @Model.Post.CreatedAtUTC.ToLocalTime()</small>
+            </div>
+            <div>
+                <a asp-page="/Denounces/Create" asp-route-isPost=true asp-route-id="@Model.Post.ID"
+                   class="btn btn-sm btn-danger">Denounce</a>
+            </div>
+        </div>
+        <div>
+            @Html.Raw(Model.Post.Content)
+        </div>
+    </div>
+</div>
+<hr />
+
+<form method="post" enctype="multipart/form-data" class="mb-1">
+    <h4>Comment</h4>
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input asp-for="Input.PostID" value="@Model.Post.ID" hidden />
+    <input asp-for="Input.ReplyToID" hidden />
+    <div class="form-group mb-0">
+        <input id="top_x" type="hidden" asp-for="Input.Content">
+        <trix-editor input="top_x"></trix-editor>
+        <span asp-validation-for="Input.Content" class="text-danger" id="contentError"></span>
+    </div>
+    <input id="attachmentPaths" asp-for="Input.AttachmentPaths" hidden />
+    <div class="border border-top-0 d-flex justify-content-end px-3 py-2">
+        <button type="submit" class="btn btn-primary" asp-page-handler="Comment">Create</button>
+    </div>
+</form>
+<hr />
+
+@if (Model.Comments.Any())
+{
+    <nav>
+        <ul class="pagination">
+            <li class="page-item @preDisabled">
+                <a class="page-link" asp-page="./Details"
+                   asp-route-id="@Model.Post.ID"
+                   asp-route-pageIndex="@(Model.Comments.PageIndex-1)">
+                    Previous
+                </a>
+            </li>
+            @foreach (var pageIndex in Model.Comments.GetPageIndexes(9))
+            {
+                <li class="page-item @Active(pageIndex)">
+                    <a class="page-link" asp-page="./Details"
+                       asp-route-id="@Model.Post.ID"
+                       asp-route-pageIndex="@pageIndex">
+                        @pageIndex
+                    </a>
+                </li>
+            }
+            <li class="page-item @nextDisabled">
+                <a class="page-link" asp-page="./Details"
+                   asp-route-id="@Model.Post.ID"
+                   asp-route-pageIndex="@(Model.Comments.PageIndex+1)">
+                    Next
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <h3>Comments</h3>
+    <div class="container-fluid mb-2">
+        @foreach (var comment in Model.Comments)
+        {
+        <div class="row border-bottom">
+            <div class="col-2">
+                @if (!string.IsNullOrEmpty(comment.User.Gravatar))
+                {
+                    <img src="@FileUpload.GetGravatarUrl(comment.User.Gravatar)"
+                         class="img-fluid img-thumbnail" />
+                }
+            </div>
+            <div class="col-10">
+                <div class="d-flex justify-content-between">
+                    <h3>@comment.User.Name</h3>
+                    <small class="text-secondary">CreatedAt: @comment.CreatedAtUTC.ToLocalTime()</small>
+                </div>
+                <div class="mb-2 p-2 border-bottom">
+                    @Html.Raw(comment.Content)
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <a asp-page="/Denounces/Create" asp-route-isPost=false asp-route-id="@comment.ID"
+                       class="btn btn-sm btn-danger">Denounce</a>
+                    <button name="replyToButton" data-comment-id="@comment.ID"
+                            data-reply-name="@comment.User.Name"
+                            class="btn btn-sm btn-primary">
+                        Reply
+                    </button>
+                </div>
+                <div id="repliesOf@(comment.ID)">
+                    @if (Model.Replies[comment.ID].Count > 0)
+                    {
+                        @await Html.PartialAsync("_ReplyAreaPartial", Model.Replies[comment.ID])
+                    }
+                </div>
+                <div id="reply@(comment.ID)" class="d-none">
+                    <form method="post" enctype="multipart/form-data" class="mb-1">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input asp-for="Input.PostID" value="@Model.Post.ID" hidden />
+                        <input asp-for="Input.ReplyToID" value="@comment.ID" hidden />
+                        <div class="form-group mb-0">
+                            <input id="x@(comment.ID)" type="hidden" asp-for="Input.Content">
+                            <trix-editor input="x@(comment.ID)"></trix-editor>
+                            <span asp-validation-for="Input.Content" class="text-danger" id="contentError"></span>
+                        </div>
+                        <input id="attachmentPaths" asp-for="Input.AttachmentPaths" hidden />
+                        <div class="border border-top-0 d-flex justify-content-end px-3 py-2">
+                            <button type="submit" class="btn btn-primary" asp-page-handler="Comment">Create</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+    <nav>
+        <ul class="pagination">
+            <li class="page-item @preDisabled">
+                <a class="page-link" asp-page="./Details"
+                   asp-route-id="@Model.Post.ID"
+                   asp-route-pageIndex="@(Model.Comments.PageIndex-1)">
+                    Previous
+                </a>
+            </li>
+            @foreach (var pageIndex in Model.Comments.GetPageIndexes(9))
+            {
+                <li class="page-item @Active(pageIndex)">
+                    <a class="page-link" asp-page="./Details"
+                       asp-route-id="@Model.Post.ID"
+                       asp-route-pageIndex="@pageIndex">
+                        @pageIndex
+                    </a>
+                </li>
+            }
+            <li class="page-item @nextDisabled">
+                <a class="page-link" asp-page="./Details"
+                   asp-route-id="@Model.Post.ID"
+                   asp-route-pageIndex="@(Model.Comments.PageIndex+1)">
+                    Next
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <form method="post" enctype="multipart/form-data" class="mb-1">
+        <h4>Comment</h4>
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input asp-for="Input.PostID" value="@Model.Post.ID" hidden />
+        <input asp-for="Input.ReplyToID" hidden />
+        <div class="form-group mb-0">
+            <input id="last_x" type="hidden" asp-for="Input.Content">
+            <trix-editor input="last_x"></trix-editor>
+            <span asp-validation-for="Input.Content" class="text-danger" id="contentError"></span>
+        </div>
+        <input id="attachmentPaths" asp-for="Input.AttachmentPaths" hidden />
+        <div class="border border-top-0 d-flex justify-content-end px-3 py-2">
+            <button type="submit" class="btn btn-primary" asp-page-handler="Comment">Create</button>
+        </div>
+    </form>
+    <hr />
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/trix/upload.js"></script>
+    <script src="~/trix/fixImageOverflow.js"></script>
+    <script src="~/js/reply.js"></script>
+} 

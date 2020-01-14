@@ -1,0 +1,43 @@
+﻿@page
+@model AddRoleModel
+@{
+    ViewData["Title"] = "AddRole";
+}
+
+<h1>AddRole</h1>
+<pre>
+    Select a role and click the button.
+    If you select "None", it will delete all role in the user.
+    If you select a role within the user's Roles, the role will be removed.
+    If you select a role is not within the user's Roles, the role will be added.
+    The change will work after the user relogin.
+</pre>
+<hr />
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">User</th>
+            <th scope="col">Roles</th>
+            <th scope="col">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model.Users)
+        {
+            <tr>
+                <td>@user.Name</td>
+                <td>@Model.UserRoles[user.Id]</td>
+                <td>
+                    <form method="post">
+                        <input asp-for="UserID" value="@user.Id" hidden />
+                        <select asp-for="Role" asp-items="Model.Roles">
+                            <option value="">None</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-primary">Excute</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

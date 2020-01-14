@@ -1,0 +1,19 @@
+﻿@page
+@model WebApplication1.Pages.Admin.Denounces.DetailsModel
+
+<div class="mb-4">
+    <h4>Denounced Details</h4>
+    <hr/> 
+    <div>Denounced Name: @Model.Denounce.Denounced.Name</div>
+    <div>Content: <div class="jumbotron">@Html.Raw(Model.DContent)</div></div>
+</div>
+<div class="d-flex justify-content-between">
+    <form method="post">
+        <input name="agree" value=true hidden />
+        <button type="submit" class="btn btn-success">Agree</button>
+    </form>
+    <form method="post">
+        <input name="agree" value=false hidden />
+        <button type="submit" class="btn btn-danger">Disagree</button>
+    </form>
+</div>

@@ -1,0 +1,22 @@
+﻿@page
+@model CreateModel
+@{
+}
+<div class="mb-4">
+    <h4>Denounced Details</h4>
+    <hr/> 
+    <div>Denounced Name: @Model.Denounced.Name</div>
+    <div>Content: <div class="jumbotron">@Html.Raw(Model.DContent)</div></div>
+</div>
+<form method="post">
+    <h4>Denounce</h4>
+    <hr />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input asp-for="Denounce.DenouncedID" value="@Model.Denounced.Id" hidden />
+    <div class="form-group">
+        <label asp-for="Denounce.Reason"></label>
+        <textarea asp-for="Denounce.Reason" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Denounce.Reason" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary float-right">Create</button>
+</form>

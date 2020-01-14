@@ -1,0 +1,79 @@
+﻿@page
+@model IndexModel
+@using WebApplication1.Data
+@{
+    ViewData["Title"] = "Messages";
+    var preDisabled = Model.Messages.HasPreviousPage ? "" : "disabled";
+    var nextDisabled = Model.Messages.HasNextPage ? "" : "disabled";
+    string Active(int pageIndex)
+    {
+        return Model.Messages.IsCurrentPage(pageIndex) ? "active" : "";
+    }
+    string ActiveNav(string action)
+    {
+        return Model.SelectedAction == action ? "active" : "";
+    }
+}
+<div class="d-flex justify-content-between">
+    <nav class="nav nav-pills">
+        <a class="nav-link @ActiveNav("")" asp-page="./Index" asp-route-action="">
+            All
+        </a>
+        <a class="nav-link @ActiveNav("comment")" asp-page="./Index" asp-route-action="comment">
+            Comment
+        </a>
+        <a class="nav-link @ActiveNav("mention")" asp-page="./Index" asp-route-action="mention">
+            Mention
+        </a>
+    </nav>
+    <form method="post">
+        <input name="action" value="@Model.SelectedAction" hidden />
+        <button asp-page-handler="CheckAll" class="btn btn-primary">
+            Check All Messages In the Action
+        </button>
+    </form>
+</div>
+
+@if (Model.Messages.Any())
+{
+    <ul class="list-group list-group-flush my-2">
+        @foreach (var msg in Model.Messages)
+        {
+            <li class="list-group-item">
+                @await Html.PartialAsync("_MsgPartical", msg)
+            </li>
+        }
+    </ul>
+    <nav>
+        <ul class="pagination">
+            <li class="page-item @preDisabled">
+                <a class="page-link" asp-page="./Index"
+                   asp-route-pageIndex="@(Model.Messages.PageIndex-1)"
+                   asp-route-action="@Model.SelectedAction">
+                    Previous
+                </a>
+            </li>
+            @foreach (var pageIndex in Model.Messages.GetPageIndexes(9))
+            {
+                <li class="page-item @Active(pageIndex)">
+                    <a class="page-link" asp-page="./Index"
+                       asp-route-pageIndex="@pageIndex"
+                       asp-route-action="@Model.SelectedAction">
+                        @pageIndex
+                    </a>
+                </li>
+            }
+            <li class="page-item @nextDisabled">
+                <a class="page-link" asp-page="./Index"
+                   asp-route-pageIndex="@(Model.Messages.PageIndex+1)"
+                   asp-route-action="@Model.SelectedAction">
+                    Next
+                </a>
+            </li>
+        </ul>
+    </nav>
+}
+else
+{
+    <p>You has no relative messages.</p>
+}

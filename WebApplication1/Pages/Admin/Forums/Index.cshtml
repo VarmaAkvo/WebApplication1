@@ -1,0 +1,41 @@
+﻿@page
+@model WebApplication1.IndexModel
+@inject WebApplication1.Utilities.FileUpload FileUpload
+@{
+    ViewData["Title"] = "Forums";
+}
+<div class="d-flex justify-content-between mb-2">
+    <h1 class="mb-0">Forums</h1>
+    <a asp-page="./Create" class="btn btn-primary">New Forum</a>
+</div>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Icon</th>
+            <th scope="col">Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var forum in Model.Forums)
+        {
+            <tr>
+                <td>
+                    @if (!string.IsNullOrEmpty(forum.Icon))
+                    {
+                        <img src="@FileUpload.GetForumIconUrl(forum.Icon)" class="img-fluid" width="96" height="96" />
+                    }
+                </td>
+                <td>@forum.Name</td>
+                <td>@forum.Description</td>
+                <td>
+                    <a asp-page="Edit" asp-route-id="@forum.ID">Edit</a>
+                    <a asp-page="Delete" asp-route-id="@forum.ID">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
